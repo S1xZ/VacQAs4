@@ -23,7 +23,7 @@ exports.getHospitals = async (req, res, next) => {
       (match) => `$${match}`
     );
 
-    query = Hospital.find(JSON.parse(queryStr));
+    query = Hospital.find(JSON.parse(queryStr)).populate("appointments");
 
     // Select Fields
     if (req.query.select) {
@@ -141,6 +141,8 @@ exports.deleteHospital = async (req, res, next) => {
       console.log("No hospital found");
       return res.status(400).json({ success: false });
     }
+
+    hospital.remove();
     res.status(200).json({
       success: true,
       data: {},

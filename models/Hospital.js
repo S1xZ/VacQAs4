@@ -7,7 +7,7 @@ const HospitalSchema = new mongoose.Schema(
       required: [true, "Please add a name"],
       unique: true,
       trim: true,
-      maxlength: [50, "Name cannot be more than 50 characters"],
+      maxlength: [50, "Name can not be more than 50 characters"],
     },
     address: {
       type: String,
@@ -23,8 +23,8 @@ const HospitalSchema = new mongoose.Schema(
     },
     postalcode: {
       type: String,
-      required: [true, "Please add a postal code"],
-      maxlength: [5, "Postal Code cannot be more than 5 digits"],
+      required: [true, "Please add a postalcode"],
+      maxlength: [5, "Postal code can not be more than 5 digits"],
     },
     tel: {
       type: String,
@@ -34,7 +34,25 @@ const HospitalSchema = new mongoose.Schema(
       required: [true, "Please add a region"],
     },
   },
-  { versionKey: false }
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+//Reverse populate with virtuals
+HospitalSchema.virtual("appointments", {
+  ref: "Appointment",
+  localField: "_id",
+  foreignField: "hospital",
+  justOne: false,
+});
+
+//Cascade delete appointments when a hospital is deleted
+HospitalSchema.pre("remove", async function (next) {
+  console.log(`Appointments being removed from hospital ${this._id}`);
+  await this.model("Appointment").deleteMany({ hospital: this._id });
+  next();
+});
 
 module.exports = mongoose.model("Hospital", HospitalSchema);
